@@ -40,14 +40,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r chineseinla-notion/requirements.txt
 
-      - name: Run scraper
+      - name: Run scraper and sync Notion
         run: python chineseinla-notion/runner.py
-
-      - name: Upload CSV backup
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chineseinla-output
-          path: chineseinla-notion/output/
-          if-no-files-found: ignore
-          retention-days: 7
