@@ -11,6 +11,7 @@
 - 分页停止采用安全判断：连续 2 页没有今天帖子、至少 5 条旧日期帖子、旧帖比例至少 50%、页面日期都不晚于昨天、且没有首次出现的未知时间帖子，才停止继续翻页
 - 运行跨越洛杉矶午夜时停止写入，避免混入两个自然日
 - 未抓到任何今天帖子时不清空 Notion
+- 不生成 CSV、HTML 备份或 GitHub Actions Artifact；生产任务只把结果写入 Notion
 - Notion Token 使用 GitHub Actions Secret `NOTION_TOKEN`，不写入代码
 
 ## 筛选规则
@@ -23,10 +24,9 @@
 
 ## 文件结构
 
-- `main.py`：抓取、去重、筛选、CSV 备份、Notion 同步
-- `runner.py`：稳定运行入口，处理临时网络失败和 Notion 重复清理
+- `main.py`：抓取、去重、筛选、Notion 同步逻辑
+- `runner.py`：生产运行入口，处理临时网络失败、关闭文件输出、清理临时文件并保证 Notion 重复清理安全
 - `requirements.txt`：Python 依赖
-- `output/`：运行时生成 `today_all.csv`、`today_kept.csv`、`today_removed.csv` 等备份，不提交到仓库
 
 ## 手动运行
 
