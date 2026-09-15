@@ -1,0 +1,23 @@
+# Automation Scripts
+
+这个仓库专门存放需要定期执行或手动触发的自动化脚本。
+
+## 项目
+
+### `chineseinla-notion/`
+ChineseInLA「工作求职」论坛 → Notion 自动同步。
+
+- 主程序：`chineseinla-notion/main.py`
+- 稳定运行入口：`chineseinla-notion/runner.py`
+- Python 依赖：`chineseinla-notion/requirements.txt`
+- 开发测试：`chineseinla-notion/tests/fixed_test.py`
+- 详细说明：`chineseinla-notion/README.md`
+
+## GitHub Actions
+
+自动任务配置统一放在 `.github/workflows/`。
+
+- `chineseinla-notion.yml`：定期抓取并同步到 Notion
+- `chineseinla-notion-dev.yml`：开发测试，仅手动触发
+
+> 约定：`bot` 只放脚本和定时任务；需要公开访问的网页统一放到 `cslb` 仓库。
