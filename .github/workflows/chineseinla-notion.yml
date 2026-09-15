@@ -5,7 +5,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "chineseinla-notion/**"
+      - "chineseinla-notion/main.py"
+      - "chineseinla-notion/runner.py"
+      - "chineseinla-notion/requirements.txt"
       - ".github/workflows/chineseinla-notion.yml"
   schedule:
     - cron: "7 */2 * * *"
