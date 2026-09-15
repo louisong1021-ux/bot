@@ -1,31 +1,17 @@
-name: Automation Template - Development
+name: ChineseInLA Code Check
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "fixed_test.py"
-      - ".github/workflows/fixed-test.yml"
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
-
-    env:
-      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install requests
-        run: pip install requests
-
-      - name: Write fixed content to Notion
-        run: python fixed_test.py
+      - name: Syntax check
+        run: python -m py_compile chineseinla-notion/main.py chineseinla-notion/runner.py
