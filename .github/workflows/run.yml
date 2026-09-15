@@ -2,13 +2,6 @@ name: ChineseInLA Bot
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "main.py"
-      - "runner.py"
-      - "requirements.txt"
-      - ".github/workflows/run.yml"
   schedule:
     - cron: "7,37 * * * *"
 
@@ -36,7 +29,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run scraper
-        run: python runner.py
+        run: python main.py
 
       - name: Upload CSV backup
         if: always()
