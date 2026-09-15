@@ -26,7 +26,12 @@ def resilient_scrape():
             retryable = True
             error = exc
         except RuntimeError as exc:
-            retryable = "no topic links were parsed" in str(exc).lower()
+            message = str(exc).lower()
+            retryable = (
+                "no topic links were parsed" in message
+                or "没有解析到任何帖子链接" in message
+                or "页面访问成功，但没有解析到任何帖子链接" in message
+            )
             error = exc
 
         if not retryable or attempt == attempts:
