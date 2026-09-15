@@ -1,4 +1,4 @@
-name: Fixed Content Notion Test
+name: Automation Template - Development
 
 on:
   workflow_dispatch:
