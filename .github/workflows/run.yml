@@ -2,6 +2,13 @@ name: ChineseInLA Bot
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "main.py"
+      - "runner.py"
+      - "requirements.txt"
+      - ".github/workflows/run.yml"
   schedule:
     - cron: "7,37 * * * *"
 
