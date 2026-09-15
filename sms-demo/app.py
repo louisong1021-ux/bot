@@ -104,7 +104,7 @@ def dial_status():
 
     if status in MISSED_CALL_STATUSES and caller:
         from_number = os.getenv("TWILIO_PHONE_NUMBER", "").strip()
-        body = os.getenv("MISSED_CALL_TEXT", DEFAULT_MISSED_CALL_TEXT).strip()
+        body = os.getenv("MISSED_CALL_TEXT", "").strip() or DEFAULT_MISSED_CALL_TEXT
 
         try:
             if not from_number:
