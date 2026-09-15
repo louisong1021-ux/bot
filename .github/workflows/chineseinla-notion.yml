@@ -2,6 +2,13 @@ name: ChineseInLA → Notion
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "chineseinla-notion/**"
+      - ".github/workflows/chineseinla-notion.yml"
+  schedule:
+    - cron: "7 */2 * * *"
 
 concurrency:
   group: chineseinla-bot
