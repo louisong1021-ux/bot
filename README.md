@@ -1,6 +1,6 @@
 # bot
 
-脚本仓库。
+脚本和后端自动化仓库。
 
 ## ChineseInLA → Notion
 
@@ -13,4 +13,17 @@
 
 GitHub Actions 配置在 `.github/workflows/`。生产任务 `chineseinla-notion.yml` 每 2 小时运行一次，也可以手动触发。
 
-仓库约定：`bot` 用于脚本和定期执行任务；可公开访问的网页放在 `cslb`。
+## AI SMS Receptionist
+
+项目目录：`ai-sms-receptionist/`
+
+第一版流程：`Twilio SMS → FastAPI → OpenAI → SQLite → optional Notion`。
+
+- `app.py`：Twilio SMS Webhook 和测试接口
+- `ai_agent.py`：OpenAI Responses API 客服逻辑与 Lead 结构化输出
+- `db.py`：对话、Lead、幂等和 opt-out 状态
+- `notion_sync.py`：可选 Notion Lead 同步
+- `Dockerfile`：部署入口
+- `README.md`：本地测试和 Twilio 配置说明
+
+仓库约定：`bot` 用于脚本、自动化和后端服务；可公开访问的静态网页放在 `cslb`。
