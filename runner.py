@@ -3,6 +3,46 @@ import time
 import main
 
 
+def reset_http_session():
+    """Start a fresh HTTP session while keeping the same request headers."""
+    old_headers = dict(main.session.headers)
+    try:
+        main.session.close()
+    except Exception:
+        pass
+
+    main.session = main.requests.Session()
+    main.session.headers.update(old_headers)
+
+
+def resilient_scrape():
+    """Retry transient failures from the same fixed ChineseInLA URL only."""
+    attempts = 4
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return original_scrape()
+        except main.requests.RequestException as exc:
+            retryable = True
+            error = exc
+        except RuntimeError as exc:
+            retryable = "no topic links were parsed" in str(exc).lower()
+            error = exc
+
+        if not retryable or attempt == attempts:
+            raise error
+
+        wait_seconds = attempt * 5
+        print(
+            f"ChineseInLA attempt {attempt}/{attempts} failed: {error}. "
+            f"Retrying the same fixed URL in {wait_seconds}s..."
+        )
+        reset_http_session()
+        time.sleep(wait_seconds)
+
+    raise RuntimeError("ChineseInLA retries exhausted")
+
+
 def safe_delete_blocks(blocks):
     """Delete old Notion blocks idempotently.
 
@@ -49,8 +89,13 @@ def safe_delete_blocks(blocks):
     print(f"old block cleanup complete: deleted={deleted}, skipped={skipped}")
 
 
-# Only patch Notion cleanup. All ChineseInLA fetching remains exactly in
-# main.py and uses the fixed www.chineseinla.com URL.
+# Keep all ChineseInLA fetching in main.py and on the fixed www.chineseinla.com
+# source. This wrapper only retries the same source when GitHub receives a
+# transient empty/failed response.
+original_scrape = main.scrape
+main.scrape = resilient_scrape
+
+# Make Notion cleanup safe to repeat after a partially completed run.
 main.delete_blocks = safe_delete_blocks
 
 
