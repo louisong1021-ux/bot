@@ -1,3 +1,4 @@
+import shutil
 import time
 
 import main
@@ -15,13 +16,29 @@ def reset_http_session():
     main.session.headers.update(old_headers)
 
 
+def cleanup_output_dir():
+    """Remove any temporary/debug files so this job only writes to Notion."""
+    try:
+        if main.OUTPUT_DIR.exists():
+            shutil.rmtree(main.OUTPUT_DIR)
+    except Exception as exc:
+        print(f"Temporary output cleanup warning: {exc}")
+
+
+def discard_csv(*args, **kwargs):
+    """Disable CSV/file output for the scheduled production job."""
+    return None
+
+
 def resilient_scrape():
     """Retry transient failures from the same fixed ChineseInLA URL only."""
     attempts = 4
 
     for attempt in range(1, attempts + 1):
         try:
-            return original_scrape()
+            result = original_scrape()
+            cleanup_output_dir()
+            return result
         except main.requests.RequestException as exc:
             retryable = True
             error = exc
@@ -33,6 +50,10 @@ def resilient_scrape():
                 or "页面访问成功，但没有解析到任何帖子链接" in message
             )
             error = exc
+
+        # main.py may create a debug HTML file before raising. Remove it so the
+        # scheduled production job never leaves output files behind.
+        cleanup_output_dir()
 
         if not retryable or attempt == attempts:
             raise error
@@ -100,9 +121,15 @@ def safe_delete_blocks(blocks):
 original_scrape = main.scrape
 main.scrape = resilient_scrape
 
+# Production mode: do not generate CSV/output files; only sync the result to Notion.
+main.save_csv = discard_csv
+
 # Make Notion cleanup safe to repeat after a partially completed run.
 main.delete_blocks = safe_delete_blocks
 
 
 if __name__ == "__main__":
-    main.main()
+    try:
+        main.main()
+    finally:
+        cleanup_output_dir()
