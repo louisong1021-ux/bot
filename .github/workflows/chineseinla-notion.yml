@@ -9,8 +9,6 @@ on:
       - "chineseinla-notion/runner.py"
       - "chineseinla-notion/requirements.txt"
       - ".github/workflows/chineseinla-notion.yml"
-  schedule:
-    - cron: "7 */2 * * *"
 
 concurrency:
   group: chineseinla-bot
