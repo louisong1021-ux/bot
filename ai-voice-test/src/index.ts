@@ -1,32 +1,65 @@
-export interface Env {}
+import { DurableObject } from "cloudflare:workers";
+import { handlePublicHttp, json } from "./router";
 
-function json(data: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers);
-  headers.set("content-type", "application/json; charset=utf-8");
-
-  return new Response(JSON.stringify(data), {
-    ...init,
-    headers,
-  });
+export interface Env {
+  CALL_SESSION: DurableObjectNamespace;
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-
-    if (request.method === "GET" && url.pathname === "/health") {
-      return json({
-        ok: true,
-        service: "ai-voice-test",
-        stage: "A",
-      });
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const publicResponse = handlePublicHttp(request);
+    if (publicResponse) {
+      return publicResponse;
     }
 
-    return json(
-      {
-        error: "not_found",
-      },
-      { status: 404 },
-    );
+    const upgrade = request.headers.get("Upgrade");
+    if (request.method !== "GET" || upgrade?.toLowerCase() !== "websocket") {
+      return json(
+        { error: "websocket_upgrade_required" },
+        { status: 426 },
+      );
+    }
+
+    const id = env.CALL_SESSION.newUniqueId();
+    const stub = env.CALL_SESSION.get(id);
+    return stub.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
+
+export class CallSession extends DurableObject<Env> {
+  async fetch(request: Request): Promise<Response> {
+    const upgrade = request.headers.get("Upgrade");
+    if (request.method !== "GET" || upgrade?.toLowerCase() !== "websocket") {
+      return json(
+        { error: "websocket_upgrade_required" },
+        { status: 426 },
+      );
+    }
+
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+
+    this.ctx.acceptWebSocket(server);
+    server.serializeAttachment({
+      connectedAt: Date.now(),
+    });
+
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+    });
+  }
+
+  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+    ws.send(message);
+  }
+
+  webSocketClose(
+    _ws: WebSocket,
+    _code: number,
+    _reason: string,
+    _wasClean: boolean,
+  ): void {
+    // Stage B only: no persistence and no summary yet.
+  }
+}
