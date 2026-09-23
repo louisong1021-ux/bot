@@ -6,5 +6,19 @@
   "workers_dev": true,
   "observability": {
     "enabled": true
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CALL_SESSION",
+        "class_name": "CallSession"
+      }
+    ]
+  },
+  "exports": {
+    "CallSession": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
   }
 }
