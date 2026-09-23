@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  stage-a:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,3 +30,26 @@ jobs:
         run: npm test
       - name: Typecheck
         run: npm run typecheck
+      - name: Local Worker + Durable Object WebSocket integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler dev --port 8787 --ip 127.0.0.1 > /tmp/ai-voice-wrangler.log 2>&1 &
+          WRANGLER_PID=$!
+          trap 'kill "$WRANGLER_PID" 2>/dev/null || true' EXIT
+
+          READY=0
+          for _ in {1..30}; do
+            if curl -fsS http://127.0.0.1:8787/health > /tmp/ai-voice-health.json; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            cat /tmp/ai-voice-wrangler.log
+            exit 1
+          fi
+
+          npm run test:integration
