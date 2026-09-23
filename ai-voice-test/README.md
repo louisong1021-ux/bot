@@ -24,28 +24,24 @@ First version only:
 ## Development order
 
 - [x] A. Worker skeleton + `GET /health`
-- [ ] B. Durable Object + WebSocket
+- [x] B. Durable Object + WebSocket
 - [ ] C. OpenAI streaming
 - [ ] D. Twilio ConversationRelay
 - [ ] E. Hangup summary
 
 Each stage must pass its tests before the next stage begins.
 
-## Stage A
+## Endpoints
 
-`GET /health` returns:
+### `GET /health`
 
-```json
-{
-  "ok": true,
-  "service": "ai-voice-test",
-  "stage": "A"
-}
-```
+Returns the current project stage and basic health only.
 
-Unknown routes return HTTP 404.
+### `GET /ws`
 
-### Local commands
+Requires a WebSocket upgrade. Each accepted connection is routed to a fresh `CallSession` Durable Object. Stage B uses an echo response only so the Worker -> Durable Object -> WebSocket path can be verified before adding OpenAI.
+
+## Local commands
 
 ```bash
 npm install
@@ -54,7 +50,13 @@ npm run typecheck
 npm run dev
 ```
 
-### Deployment
+With `wrangler dev` running on port 8787:
+
+```bash
+npm run test:integration
+```
+
+## Deployment
 
 ```bash
 npm run deploy
